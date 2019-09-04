@@ -47,9 +47,9 @@ class BinaryClassificationMeter(object):
         return {'Acc: ': self.acc,
                 'Balanced acc: ': self.bacc}
 
-path_to_net = '/home/master/Master/04Evaluation/02Old/Final_suc_fail/cv_2_iterin_4_net.pt'
-label_dir = '/home/master/data/GIG_ML_std/label/'
-nii_dir = '/home/master/data/GIG_ML_std/numpy/'
+path_to_net = './network.pt'
+label_dir = './label/'
+nii_dir = './numpy/'
 checkpoints = torch.load(path_to_net)
 net = Net()
 net.load_state_dict(checkpoints['net_state_dict'])
