@@ -1,29 +1,53 @@
 import torch
-from sklearn.model_selection import KFold
 import numpy as np
-from visdom import Visdom
 import matplotlib.pyplot as plt
 import random
 import csv
 
 from torch.utils.data import DataLoader
 
-class VisdomLinePlotter(object):
-    """Plots to Visdom"""
-    def __init__(self, env_name='fMRI'):
-        self.viz = Visdom()
-        self.env = env_name
-        self.plots = {}
-    def plot(self, var_name, x_name, split_name, title_name, x, y):
-        if var_name not in self.plots:
-            self.plots[var_name] = self.viz.line(X=np.array([x,x]), Y=np.array([y,y]), env=self.env, opts=dict(
-                legend=[split_name],
-                title=title_name,
-                xlabel=x_name,
-                ylabel=var_name
-            ))
-        else:
-            self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name, update = 'append')
+def plot_map(sumed_heatmap, brain, name):
+    sumed_heatmap /= np.max(sumed_heatmap)
+    extent = 0, brain.shape[0], 0, brain.shape[1]
+    for i in range(sumed_heatmap.shape[2]):
+        plt.subplot(3,3,i+1)
+        plt.imshow(brain[:,:,22*i+11], cmap='gray', extent=extent)
+        plt.imshow(sumed_heatmap.squeeze()[i], alpha=0.5, extent=extent)
+
+        plt.xlabel(f'slice {i}')
+        plt.title(name)
+    plt.show()
+    
+class BinaryClassificationMeter(object):
+    """
+        Computes and stores the average and current value
+    """
+    def __init__(self):
+        self.reset()
+        
+    def reset(self):
+        self.tp = 0
+        self.tn = 0
+        self.fp = 0
+        self.fn = 0
+        self.acc = 0
+        self.bacc = 0
+
+    def update(self, prediction, target):
+        pred = prediction >= 0.5
+        truth = target >= 0.5
+        self.tp += np.multiply(pred, truth).sum(0)
+        self.tn += np.multiply((1 - pred), (1 - truth)).sum(0)
+        self.fp += np.multiply(pred, (1 - truth)).sum(0)
+        self.fn += np.multiply((1 - pred), truth).sum(0)
+
+        self.acc = (self.tp + self.tn).sum() / (self.tp + self.tn + self.fp + self.fn).sum()
+        self.bacc = (self.tp.sum() / (self.tp + self.fn).sum() + self.tn.sum() / (self.tn + self.fp).sum()) * 0.5
+
+    def get_scores(self):
+        return {'Acc: ': self.acc,
+                'Balanced acc: ': self.bacc}
+
 
 def get_dataloader(dataset, batch_size, num_GPU):
     """
