@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import random
-import csv
 
 from torch.utils.data import DataLoader
 
