@@ -55,15 +55,3 @@ def get_dataloader(dataset, batch_size, num_GPU):
     """
     return torch.utils.data.DataLoader(dataset, batch_size=batch_size, 
                                        shuffle=True, num_workers=0*num_GPU)
-        
-def save_scores(scores, phase, cv_num):
-    with open(phase + '_cv' + str(cv_num) + '_scores.csv', 'w') as outfile:
-        writer = csv.writer(outfile)
-        writer.writerow(scores.keys())
-        writer.writerows(zip(*scores.values()))
-        
-def save_loss(loss, phase, cv_num):
-    with open(phase + '_cv' + str(cv_num) + '_loss.csv', 'w') as outfile:
-        writer = csv.writer(outfile)
-        writer.writerow(loss.keys())
-        writer.writerows(zip(*loss.values()))
